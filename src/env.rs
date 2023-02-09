@@ -110,6 +110,7 @@ lazy_static! {
         Some(path) => split_paths(path).collect(),
         None => vec![],
     };
+    pub static ref RTX_GLOBAL_TOOL_VERSIONS_FILENAME: String = "tool-versions".into();
     pub static ref RTX_DEFAULT_TOOL_VERSIONS_FILENAME: String = if cfg!(test) {
         ".test-tool-versions".into()
     } else {

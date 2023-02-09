@@ -5,10 +5,9 @@ use once_cell::sync::Lazy;
 
 use crate::cli::args::runtime::{RuntimeArg, RuntimeArgParser};
 use crate::cli::command::Command;
-use crate::config::{config_file, Config};
+use crate::config::{config_file, find_global_tool_versions_path, Config};
 use crate::output::Output;
 use crate::plugins::PluginName;
-use crate::{dirs, env};
 
 /// Sets global .tool-versions to include a specified runtime
 ///
@@ -43,7 +42,8 @@ pub struct Global {
 
 impl Command for Global {
     fn run(self, config: Config, out: &mut Output) -> Result<()> {
-        let cf_path = dirs::HOME.join(env::RTX_DEFAULT_TOOL_VERSIONS_FILENAME.as_str());
+        let cf_path =
+            find_global_tool_versions_path(config.settings.global_tool_versions_in_config_dir);
 
         let mut cf = match cf_path.exists() {
             true => config_file::parse(&cf_path)?,
