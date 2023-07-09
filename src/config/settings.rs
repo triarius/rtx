@@ -27,6 +27,7 @@ pub struct Settings {
     pub log_level: LevelFilter,
     pub raw: bool,
     pub yes: bool,
+    pub fetch_remote_versions_timeout: Duration,
 }
 
 impl Default for Settings {
@@ -49,6 +50,7 @@ impl Default for Settings {
             log_level: *RTX_LOG_LEVEL,
             raw: *RTX_RAW,
             yes: *RTX_YES,
+            fetch_remote_versions_timeout: *RTX_FETCH_REMOTE_VERSIONS_TIMEOUT,
         }
     }
 }
@@ -110,6 +112,10 @@ impl Settings {
         map.insert("log_level".into(), self.log_level.to_string());
         map.insert("raw".into(), self.raw.to_string());
         map.insert("yes".into(), self.yes.to_string());
+        map.insert(
+            "fetch_remote_versions_timeout".into(),
+            self.fetch_remote_versions_timeout.as_secs().to_string(),
+        );
         map
     }
 }
@@ -133,6 +139,7 @@ pub struct SettingsBuilder {
     pub log_level: Option<LevelFilter>,
     pub raw: Option<bool>,
     pub yes: Option<bool>,
+    pub fetch_remote_versions_timeout: Option<Duration>,
 }
 
 impl SettingsBuilder {
@@ -190,6 +197,9 @@ impl SettingsBuilder {
         if other.yes.is_some() {
             self.yes = other.yes;
         }
+        if other.fetch_remote_versions_timeout.is_some() {
+            self.fetch_remote_versions_timeout = other.fetch_remote_versions_timeout;
+        }
         self
     }
 
@@ -239,6 +249,9 @@ impl SettingsBuilder {
         settings.log_level = self.log_level.unwrap_or(settings.log_level);
         settings.raw = self.raw.unwrap_or(settings.raw);
         settings.yes = self.yes.unwrap_or(settings.yes);
+        settings.fetch_remote_versions_timeout = self
+            .fetch_remote_versions_timeout
+            .unwrap_or(settings.fetch_remote_versions_timeout);
 
         if settings.raw {
             settings.verbose = true;

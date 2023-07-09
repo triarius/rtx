@@ -420,6 +420,10 @@ impl RtxToml {
                         "log_level" => settings.log_level = Some(self.parse_log_level(&k, v)?),
                         "raw" => settings.raw = Some(self.parse_bool(&k, v)?),
                         "yes" => settings.yes = Some(self.parse_bool(&k, v)?),
+                        "fetch_remote_versions_timeout" => {
+                            settings.fetch_remote_versions_timeout =
+                                Some(self.parse_duration_seconds(&k, v)?);
+                        }
                         _ => Err(eyre!("Unknown config setting: {}", k))?,
                     };
                 }
@@ -467,6 +471,14 @@ impl RtxToml {
         match v.as_value() {
             Some(Value::String(s)) => Ok(humantime::parse_duration(s.value())?),
             Some(Value::Integer(i)) => Ok(Duration::from_secs(*i.value() as u64 * 60)),
+            _ => parse_error!(k, v, "duration")?,
+        }
+    }
+
+    fn parse_duration_seconds(&mut self, k: &str, v: &Item) -> Result<Duration> {
+        match v.as_value() {
+            Some(Value::String(s)) => Ok(humantime::parse_duration(s.value())?),
+            Some(Value::Integer(i)) => Ok(Duration::from_secs(*i.value() as u64)),
             _ => parse_error!(k, v, "duration")?,
         }
     }

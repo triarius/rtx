@@ -154,6 +154,10 @@
           "description": "directly connect plugin scripts to stdin/stdout, implies --jobs=1",
           "type": "boolean"
         },
+        "fetch_remote_versions_timeout": {
+          "description": "timeout for fetching versions from plugins",
+          "type": "number"
+        },
         "shorthands_file": {
           "description": "path to file containing shorthand mappings",
           "type": "string"
