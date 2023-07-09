@@ -28,4 +28,5 @@ SettingsBuilder {
     log_level: None,
     raw: None,
     yes: None,
+    fetch_remote_versions_timeout: None,
 }

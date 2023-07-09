@@ -49,6 +49,7 @@ mod tests {
         disable_default_shorthands = false
         disable_tools = []
         experimental = true
+        fetch_remote_versions_timeout = 10
         jobs = 2
         legacy_version_file = true
         legacy_version_file_disable_tools = []
