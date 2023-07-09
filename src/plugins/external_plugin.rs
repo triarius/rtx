@@ -13,7 +13,7 @@ use once_cell::sync::Lazy;
 
 use crate::cache::CacheManager;
 use crate::config::{Config, Settings};
-use crate::env::RTX_FETCH_REMOTE_VERSIONS_TIMEOUT;
+use crate::env::PREFER_STALE;
 use crate::env_diff::{EnvDiff, EnvDiffOperation};
 use crate::errors::Error::PluginNotInstalled;
 use crate::file::remove_all;

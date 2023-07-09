@@ -9,7 +9,10 @@ use color_eyre::eyre::Result;
 use crate::cmd::CmdLineRunner;
 use crate::config::{Config, Settings};
 use crate::duration::DAILY;
-use crate::env::{RTX_NODE_CONCURRENCY, RTX_NODE_FORCE_COMPILE};
+use crate::env::{
+    RTX_EXE, RTX_FETCH_REMOTE_VERSIONS_TIMEOUT, RTX_NODE_CONCURRENCY, RTX_NODE_FORCE_COMPILE,
+    RTX_NODE_VERBOSE_INSTALL,
+};
 use crate::file::create_dir_all;
 use crate::git::Git;
 use crate::lock_file::LockFile;
@@ -37,10 +40,10 @@ impl NodePlugin {
     fn node_build_bin(&self) -> PathBuf {
         self.node_build_path().join("bin/node-build")
     }
-    fn install_or_update_node_build(&self) -> Result<()> {
+    fn install_or_update_node_build(&self, settings: &Settings) -> Result<()> {
         let _lock = self.lock_node_build();
         if self.node_build_path().exists() {
-            self.update_node_build()
+            self.update_node_build(settings)
         } else {
             self.install_node_build()
         }
@@ -66,7 +69,7 @@ impl NodePlugin {
         git.clone(&env::RTX_NODE_BUILD_REPO)?;
         Ok(())
     }
-    fn update_node_build(&self) -> Result<()> {
+    fn update_node_build(&self, settings: &Settings) -> Result<()> {
         if self.node_build_recently_updated()? {
             return Ok(());
         }
@@ -83,8 +86,8 @@ impl NodePlugin {
         })
     }
 
-    fn fetch_remote_versions(&self) -> Result<Vec<String>> {
-        self.install_or_update_node_build()?;
+    fn fetch_remote_versions(&self, settings: &Settings) -> Result<Vec<String>> {
+        self.install_or_update_node_build(settings)?;
         let node_build_bin = self.node_build_bin();
         CorePlugin::run_fetch_task_with_timeout(move || {
             let output = cmd!(node_build_bin, "--definitions").read()?;
@@ -170,10 +173,10 @@ impl Plugin for NodePlugin {
         &self.core.name
     }
 
-    fn list_remote_versions(&self, _settings: &Settings) -> Result<Vec<String>> {
+    fn list_remote_versions(&self, settings: &Settings) -> Result<Vec<String>> {
         self.core
             .remote_version_cache
-            .get_or_try_init(|| self.fetch_remote_versions())
+            .get_or_try_init(|| self.fetch_remote_versions(settings))
             .cloned()
     }
 
@@ -235,13 +238,13 @@ impl Plugin for NodePlugin {
 
     fn execute_external_command(
         &self,
-        _config: &Config,
+        config: &Config,
         command: &str,
         args: Vec<String>,
     ) -> Result<()> {
         match command {
             "node-build" => {
-                self.install_or_update_node_build()?;
+                self.install_or_update_node_build(&config.settings)?;
                 cmd::cmd(self.node_build_bin(), args).run()?;
             }
             _ => unreachable!(),

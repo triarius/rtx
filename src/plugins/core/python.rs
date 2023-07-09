@@ -5,7 +5,7 @@ use color_eyre::eyre::{eyre, Result};
 
 use crate::cmd::CmdLineRunner;
 use crate::config::{Config, Settings};
-
+use crate::env::RTX_EXE;
 use crate::file::create_dir_all;
 use crate::git::Git;
 use crate::plugins::core::CorePlugin;
@@ -33,9 +33,9 @@ impl PythonPlugin {
         self.python_build_path()
             .join("plugins/python-build/bin/python-build")
     }
-    fn install_or_update_python_build(&self) -> Result<()> {
+    fn install_or_update_python_build(&self, settings: &Settings) -> Result<()> {
         if self.python_build_path().exists() {
-            self.update_python_build()
+            self.update_python_build(settings)
         } else {
             self.install_python_build()
         }
@@ -51,7 +51,7 @@ impl PythonPlugin {
         git.clone(&env::RTX_PYENV_REPO)?;
         Ok(())
     }
-    fn update_python_build(&self) -> Result<()> {
+    fn update_python_build(&self, settings: &Settings) -> Result<()> {
         // TODO: do not update if recently updated
         debug!(
             "Updating python-build in {}",
@@ -62,8 +62,8 @@ impl PythonPlugin {
         Ok(())
     }
 
-    fn fetch_remote_versions(&self) -> Result<Vec<String>> {
-        self.install_or_update_python_build()?;
+    fn fetch_remote_versions(&self, settings: &Settings) -> Result<Vec<String>> {
+        self.install_or_update_python_build(settings)?;
         let python_build_bin = self.python_build_bin();
         CorePlugin::run_fetch_task_with_timeout(move || {
             let output = cmd!(python_build_bin, "--definitions").read()?;
@@ -148,10 +148,10 @@ impl Plugin for PythonPlugin {
         &self.core.name
     }
 
-    fn list_remote_versions(&self, _settings: &Settings) -> Result<Vec<String>> {
+    fn list_remote_versions(&self, settings: &Settings) -> Result<Vec<String>> {
         self.core
             .remote_version_cache
-            .get_or_try_init(|| self.fetch_remote_versions())
+            .get_or_try_init(|| self.fetch_remote_versions(settings))
             .cloned()
     }
 
