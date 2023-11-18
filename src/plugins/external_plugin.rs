@@ -13,7 +13,6 @@ use once_cell::sync::Lazy;
 
 use crate::cache::CacheManager;
 use crate::config::{Config, Settings};
-use crate::env::PREFER_STALE;
 use crate::env_diff::{EnvDiff, EnvDiffOperation};
 use crate::errors::Error::PluginNotInstalled;
 use crate::file::remove_all;
@@ -132,7 +131,7 @@ impl ExternalPlugin {
                 let result = cmd.stdout_capture().stderr_capture().unchecked().run()?;
                 Ok(result)
             },
-            *RTX_FETCH_REMOTE_VERSIONS_TIMEOUT,
+            settings.fetch_remote_versions_timeout,
         )
         .map_err(|err| {
             let script = self.script_man.get_script_path(&Script::ListAll);
