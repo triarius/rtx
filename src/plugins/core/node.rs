@@ -9,10 +9,7 @@ use color_eyre::eyre::Result;
 use crate::cmd::CmdLineRunner;
 use crate::config::{Config, Settings};
 use crate::duration::DAILY;
-use crate::env::{
-    RTX_EXE, RTX_FETCH_REMOTE_VERSIONS_TIMEOUT, RTX_NODE_CONCURRENCY, RTX_NODE_FORCE_COMPILE,
-    RTX_NODE_VERBOSE_INSTALL,
-};
+use crate::env::{RTX_NODE_CONCURRENCY, RTX_NODE_FORCE_COMPILE};
 use crate::file::create_dir_all;
 use crate::git::Git;
 use crate::lock_file::LockFile;
