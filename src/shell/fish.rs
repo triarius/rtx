@@ -6,6 +6,32 @@ use crate::shell::Shell;
 #[derive(Default)]
 pub struct Fish {}
 
+impl Fish {
+    fn fish_set_path(&self, paths: &str) -> String {
+        let paths = self.escaped_paths(paths);
+        let mut out = "fish_add_path --path --global --append --move ".to_string();
+        out.push_str(&paths);
+        out.push('\n');
+        out
+    }
+
+    fn fish_prepend_path(&self, paths: &str) -> String {
+        let paths = self.escaped_paths(paths);
+        let mut out = "fish_add_path --path --global --prepend --move ".to_string();
+        out.push_str(&paths);
+        out.push('\n');
+        out
+    }
+
+    fn escaped_paths(&self, paths: &str) -> String {
+        std::env::split_paths(paths)
+            .into_iter()
+            .map(|p| shell_escape::unix::escape(p.to_string_lossy()).into_owned())
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+}
+
 impl Shell for Fish {
     fn activate(&self, exe: &Path, flags: String) -> String {
         let exe = exe.to_string_lossy();
@@ -105,6 +131,11 @@ impl Shell for Fish {
 
     fn set_env(&self, k: &str, v: &str) -> String {
         let k = shell_escape::unix::escape(k.into());
+
+        if k == "PATH" {
+            return self.fish_set_path(v);
+        }
+
         let v = shell_escape::unix::escape(v.into());
         let v = v.replace("\\n", "\n");
         format!("set -gx {k} {v}\n")
@@ -112,6 +143,11 @@ impl Shell for Fish {
 
     fn prepend_env(&self, k: &str, v: &str) -> String {
         let k = shell_escape::unix::escape(k.into());
+
+        if k == "PATH" {
+            return self.fish_prepend_path(v);
+        }
+
         let v = shell_escape::unix::escape(v.into());
         format!("set -gx {k} {v} ${k}\n")
     }
