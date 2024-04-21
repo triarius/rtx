@@ -1,6 +1,6 @@
 ---
 source: src/shell/fish.rs
+assertion_line: 180
 expression: "replace_path(&sh.prepend_env(\"PATH\", \"/some/dir:/2/dir\"))"
 ---
-set -gx PATH '/some/dir:/2/dir' $PATH
-
+fish_add_path --path --global --prepend --move /some/dir /2/dir
